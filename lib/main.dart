@@ -2,11 +2,15 @@ import 'package:flutter/material.dart';
 import 'home_screen.dart';
 import 'package:provider/provider.dart';
 import 'task_provider.dart';
+import 'sort_provider.dart';
 
 void main() {
   runApp(
-    ChangeNotifierProvider(
-      create: (context) => TaskProvider(),
+    MultiProvider(
+      providers: [
+        ChangeNotifierProvider(create: (context) => TaskProvider()),
+        ChangeNotifierProvider(create: (context) => SortingProvider()),
+      ],
       child: MyApp(),
     ),
   );
@@ -23,7 +27,9 @@ class MyApp extends StatelessWidget {
   Widget build(BuildContext context) {
     return MaterialApp(
       title: 'My To-Do List',
-      home: const HomeScreen(title: 'To-do List'),
+      theme: ThemeData(
+          scaffoldBackgroundColor: Color.fromARGB(255, 219, 236, 250)),
+      home: const HomeScreen(title: 'To-Do List'),
       debugShowCheckedModeBanner: false,
     );
   }
