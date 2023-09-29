@@ -1,12 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
-import 'task_provider.dart';
-import 'sort_provider.dart';
-import 'custom_checkbox.dart';
+import 'package:template/UI/data.dart';
+import 'UI/sort_provider.dart';
+import 'widgets/add_task.dart';
+import 'widgets/task_list.dart';
 
 class HomeScreen extends StatelessWidget {
   const HomeScreen({Key? key, required this.title}) : super(key: key);
-
   final String title;
 
   @override
@@ -17,12 +17,13 @@ class HomeScreen extends StatelessWidget {
         actions: <Widget>[
           Row(
             children: [
+//en filteringsknapp som när du har klickat på visar all, done, undone
               IconButton(
                 icon: Icon(Icons.more_horiz),
                 onPressed: () {
                   showMenu(
                     context: context,
-                    position: RelativeRect.fromLTRB(100, 100, 0, 0),
+                    position: RelativeRect.fromLTRB(1, 0, 0, 0),
                     items: [
                       PopupMenuItem(
                         value: 'All',
@@ -58,145 +59,25 @@ class HomeScreen extends StatelessWidget {
               color: Color.fromARGB(255, 255, 255, 255),
               fontSize: 25,
               fontWeight: FontWeight.w500,
-              // Text överest på första sidan
             ),
           ),
         ),
       ),
-      body: TaskList(),
+//Laddar upp uppgifter som har lagts till i listan
+//samt felmeddelande om fel uppstår
+      body: FutureBuilder<void>(
+        future: Provider.of<TaskProvider>(context, listen: false).fetchTodos(),
+        builder: (context, snapshot) {
+          if (snapshot.connectionState == ConnectionState.waiting) {
+            return Center(child: CircularProgressIndicator());
+          } else if (snapshot.hasError) {
+            return Center(child: Text('Error: ${snapshot.error}'));
+          } else {
+            return TaskList();
+          }
+        },
+      ),
       floatingActionButton: AddTasks(),
-    );
-  }
-}
-
-class TaskList extends StatelessWidget {
-  @override
-  Widget build(BuildContext context) {
-    return Center(
-      child: Consumer2<TaskProvider, SortingProvider>(
-        builder: (context, taskProvider, sortingProvider, child) {
-          final filteredTasks = taskProvider.tasks.where((task) {
-            if (sortingProvider.currentSorting == 'Done') {
-              return task.completed;
-            } else if (sortingProvider.currentSorting == 'Undone') {
-              return !task.completed;
-            } else {
-              return true;
-            }
-          }).toList();
-
-          return ListView.separated(
-            itemCount: filteredTasks.length,
-            separatorBuilder: (context, index) => Divider(),
-            itemBuilder: (context, index) {
-              final task = filteredTasks[index];
-              return TaskListItem(task: task);
-            },
-          );
-        },
-      ),
-    );
-  }
-}
-
-class TaskListItem extends StatelessWidget {
-  final Task task;
-
-  TaskListItem({required this.task});
-
-  @override
-  Widget build(BuildContext context) {
-    return ListTile(
-      leading: CustomCheckBox(
-        value: task.completed,
-        onChanged: (value) {
-          Provider.of<TaskProvider>(context, listen: false)
-              .toggleTaskCompletion(
-            context.read<TaskProvider>().tasks.indexOf(task),
-          );
-        },
-      ),
-      title: Text(
-        task.text,
-        style: task.completed
-            ? TextStyle(
-                decoration: TextDecoration.lineThrough,
-                color: Colors.grey,
-              )
-            : TextStyle(),
-      ),
-      // sträcket som kommer när man bockar i en task
-      trailing: IconButton(
-        icon: Icon(Icons.delete),
-        onPressed: () {
-          Provider.of<TaskProvider>(context, listen: false)
-              .removeTask(context.read<TaskProvider>().tasks.indexOf(task));
-          // delete knappen
-        },
-      ),
-    );
-  }
-}
-
-class AddTasks extends StatelessWidget {
-  @override
-  Widget build(BuildContext context) {
-    return Align(
-      alignment: Alignment.bottomCenter,
-      child: FloatingActionButton.extended(
-        onPressed: () {
-          Navigator.push(
-            context,
-            MaterialPageRoute(
-              builder: (context) => SecondScreen(),
-              // komma till andra sidan
-            ),
-          );
-        },
-        backgroundColor: Color.fromARGB(255, 155, 190, 218),
-        icon: Icon(
-          Icons.add,
-          size: 24.0,
-        ),
-        label: Text('New Task'),
-        // knappen för att lägga till en new task
-      ),
-    );
-  }
-}
-
-class SecondScreen extends StatelessWidget {
-  final TextEditingController _taskController = TextEditingController();
-
-  @override
-  Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(
-        title: Text('Add New Task'),
-        backgroundColor: const Color.fromARGB(255, 155, 190, 218),
-      ),
-      body: Padding(
-        padding: const EdgeInsets.all(15.0),
-        child: Column(
-          children: [
-            TextField(
-              controller: _taskController,
-              decoration: InputDecoration(
-                labelText: 'What are you going to do?',
-              ),
-            ),
-            SizedBox(height: 16.0),
-            ElevatedButton(
-              onPressed: () {
-                Provider.of<TaskProvider>(context, listen: false)
-                    .addTask(_taskController.text);
-                Navigator.pop(context);
-              },
-              child: Text('Add'),
-            ),
-          ],
-        ),
-      ),
     );
   }
 }
