@@ -3,7 +3,7 @@ import 'package:http/http.dart' as http;
 import 'model.dart';
 
 const String ENDPOINT = 'https://todoapp-api.apps.k8s.gu.se';
-const String APIKEY = '087f6f42-e7d0-42d5-a0ac-00d7771899dd';
+const String APIKEY = '097bb9bb-1dc0-4117-b310-6147aa2932e7';
 // get
 
 // class API

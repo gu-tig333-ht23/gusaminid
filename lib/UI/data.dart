@@ -25,7 +25,7 @@ class TaskProvider with ChangeNotifier {
   Future<void> removeTodo(String id) async {
     await api.deleteTodo(id);
     _todos.removeWhere((todo) => todo.id == id);
-    notifyListeners();
+    fetchTodos();
   }
 
 // Checkbox status put
